@@ -1,36 +1,39 @@
-from time import sleep
+from app.twin.machine.cnc_spindle import CNCSpindle
+from app.twin.sensor.sensor import Sensor
+from app.twin.sensor.enums import SensorType
 
-from app.domains.machine.cnc_spindle import CNCSpindle
-from app.domains.sensor.sensor import Sensor
-from app.domains.sensor.enums import SensorType
+# Create spindle
+spindle = CNCSpindle("Main Spindle")
 
-spindle = CNCSpindle(
-    name="Main Spindle",
-    machine_type="Spindle"
-)
-
-temperature = Sensor(
+# Create temperature sensor
+temperature_sensor = Sensor(
     name="Temperature",
     sensor_type=SensorType.TEMPERATURE,
     unit="°C",
-    min_value=20,
-    max_value=120
+    min_value=0,
+    max_value=150,
 )
 
-temperature.update(30)
+# Initial value
+temperature_sensor.update(25.0)
 
-spindle.add_sensor(temperature)
+# Attach sensor
+spindle.add_sensor(temperature_sensor)
 
+# Start machine
 spindle.start()
 
-for _ in range(5):
+print("=" * 50)
+
+for tick in range(1, 11):
 
     spindle.update(1)
 
     print(
-        spindle.get_sensor(
-            SensorType.TEMPERATURE
-        ).read()
+        f"Tick {tick:02d} | "
+        f"Temperature: {spindle.get_sensor(SensorType.TEMPERATURE).read():.2f}°C | "
+        f"Health: {spindle.health:.4f}% | "
+        f"Runtime: {spindle.runtime_hours:.6f} h"
     )
 
-    sleep(1)
+print("=" * 50)

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from app.domains.machine.machine import Machine
+from app.twin.machine.machine import Machine
 
 
 @dataclass
@@ -29,4 +29,5 @@ class Factory:
     def update(self, dt: float):
 
         for machine in self.machines:
+
             machine.update(dt)
