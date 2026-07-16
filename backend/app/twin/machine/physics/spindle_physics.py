@@ -21,17 +21,13 @@ class SpindlePhysics(PhysicsModel):
         # Temperature
         # ----------------------------
 
-        temperature_sensor = machine.get_sensor_by_type(
-            SensorType.TEMPERATURE
-        )
+        temperature_sensor = machine.get_sensor_by_type(SensorType.TEMPERATURE)
 
         if temperature_sensor:
 
             current_temp = temperature_sensor.read()
 
-            new_temp = current_temp + (
-                self.heating_rate * dt
-            )
+            new_temp = current_temp + (self.heating_rate * dt)
 
             temperature_sensor.update(new_temp)
 
@@ -41,7 +37,4 @@ class SpindlePhysics(PhysicsModel):
 
         machine.health -= self.wear_rate * dt
 
-        machine.health = max(
-            machine.health,
-            0.0
-        )
+        machine.health = max(machine.health, 0.0)

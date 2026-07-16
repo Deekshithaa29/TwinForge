@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 from uuid import uuid4
 
 from app.twin.machine.enums import MachineStatus
-from app.twin.sensor.sensor import Sensor
 from app.twin.sensor.enums import SensorType
+from app.twin.sensor.sensor import Sensor
 
 if TYPE_CHECKING:
     from app.twin.machine.physics.physics_model import PhysicsModel

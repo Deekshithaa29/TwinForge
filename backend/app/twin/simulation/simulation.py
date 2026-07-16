@@ -3,6 +3,7 @@ import time
 from app.twin.factory.factory import Factory
 from app.twin.sensor.enums import SensorType
 
+
 class SimulationEngine:
 
     def __init__(self, factory: Factory):
@@ -39,21 +40,13 @@ class SimulationEngine:
 
                 if temperature:
 
-                    print(
-                        f"{machine.name}"
-                    )
+                    print(f"{machine.name}")
 
-                    print(
-                        f"Temperature : {temperature.read():.2f} °C"
-                    )
+                    print(f"Temperature : {temperature.read():.2f} °C")
 
-                    print(
-                        f"Health : {machine.health:.4f}%"
-                    )
+                    print(f"Health : {machine.health:.4f}%")
 
-                    print(
-                        f"Runtime : {machine.runtime_hours:.6f} hrs"
-                    )
+                    print(f"Runtime : {machine.runtime_hours:.6f} hrs")
 
                     print("--------------------------")
 

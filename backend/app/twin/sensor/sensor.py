@@ -27,8 +27,7 @@ class Sensor:
 
     def update(self, value: float):
 
-        self.value = max(self.min_value,
-                         min(value, self.max_value))
+        self.value = max(self.min_value, min(value, self.max_value))
 
     def read(self):
 

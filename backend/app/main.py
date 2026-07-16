@@ -1,10 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(
-    title="TwinForge API",
-    version="0.1.0"
-)
+app = FastAPI(title="TwinForge API", version="0.1.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -14,9 +11,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/")
 def root():
     return {"message": "TwinForge Backend Running"}
+
 
 @app.get("/health")
 def health():
