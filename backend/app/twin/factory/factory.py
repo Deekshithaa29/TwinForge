@@ -21,10 +21,7 @@ class Factory:
 
     def remove_machine(self, machine_id: str):
 
-        self.machines = [
-            m for m in self.machines
-            if m.id != machine_id
-        ]
+        self.machines = [m for m in self.machines if m.id != machine_id]
 
     def update(self, dt: float):
 

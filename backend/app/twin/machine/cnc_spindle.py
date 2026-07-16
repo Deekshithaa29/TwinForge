@@ -9,10 +9,7 @@ class CNCSpindle(Machine):
 
     def __init__(self, name: str):
 
-        super().__init__(
-            name=name,
-            machine_type="CNC_SPINDLE"
-        )
+        super().__init__(name=name, machine_type="CNC_SPINDLE")
 
         # Attach the physics model
         self.physics_model = SpindlePhysics()
