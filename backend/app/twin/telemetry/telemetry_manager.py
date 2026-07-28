@@ -28,6 +28,7 @@ class TelemetryManager:
             self.latest_snapshots[machine.id] = snapshot
 
             if self.publisher:
+                # print(f"Publishing telemetry for machine")
                 self.publisher.publish(snapshot)
 
     def get_latest(self):

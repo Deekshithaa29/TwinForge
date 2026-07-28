@@ -31,11 +31,14 @@ class MQTTPublisher(Publisher):
             self.port,
         )
 
+        self.client.loop_start()
+
     def disconnect(self) -> None:
         """
         Disconnect from the MQTT broker.
         """
 
+        self.client.loop_stop()
         self.client.disconnect()
 
     def publish(
@@ -46,6 +49,9 @@ class MQTTPublisher(Publisher):
         payload = TelemetrySerializer.to_json(
             telemetry
         )
+
+        # print("Publishing MQTT telemetry...")
+        # print(f"Payload: {payload}")
 
         self.client.publish(
             MACHINE_TELEMETRY,

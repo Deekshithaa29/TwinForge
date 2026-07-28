@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-
+from collections.abc import Callable
 
 @dataclass
 class SimulationContext:
@@ -10,3 +10,5 @@ class SimulationContext:
     tick: int
     dt: float
     simulation_time: float
+
+    on_tick: Callable | None = None
