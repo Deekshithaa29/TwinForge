@@ -1,22 +1,21 @@
-# TwinForge Development Log
+# Changelog
 
-## Milestone 1 - First Digital Twin Simulation
+## v0.2.0
+- Added event-driven simulation architecture
+- Added SimulationContext
+- Added tick listeners
+- Added ConsoleTelemetryListener
+- Added MQTTTelemetryListener
+- Added MQTT publisher abstraction
+- Integrated Mosquitto broker
+- Added live telemetry streaming
+- Improved telemetry management
+- Expanded automated tests
 
-### Completed
-
-- Designed base Machine abstraction
-- Added Sensor architecture
-- Implemented PhysicsModel abstraction
-- Created CNC Spindle implementation
-- Added SpindlePhysics
-- Built Factory
-- Connected Simulation Engine
-- First live simulation working
-- Temperature increases over time
-- Machine health degrades over time
-
-### Result
-
-TwinForge can now simulate a CNC spindle and update its telemetry every simulation tick.
-
-Status: ✅ Completed
+## v0.1.0
+- Initial TwinForge project structure
+- Machine abstraction
+- CNC spindle implementation
+- Sensor framework
+- Factory model
+- Basic simulation

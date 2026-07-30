@@ -11,11 +11,11 @@ class MQTTTelemetryListener:
 
     def __init__(
         self,
-        factory: Factory,
-        publisher: MQTTPublisher,
+        telemetry_manager: TelemetryManager,
     ):
-        self.telemetry = TelemetryManager(factory, publisher)
+        self.telemetry = telemetry_manager
 
     def __call__(self, context: SimulationContext) -> None:
         # print("Publishing telemetry...")
+        # print(id(self.telemetry_manager))
         self.telemetry.collect()
