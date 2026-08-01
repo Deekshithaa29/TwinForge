@@ -64,6 +64,34 @@ class SpindlePhysics(PhysicsModel):
             new_temperature
         )
 
+    def _update_vibration(self, machine,dt):
+
+        sensor = machine.get_sensor_by_type(
+            SensorType.VIBRATION
+        )
+
+        if sensor is None:
+            return
+
+        base = 0.5
+
+        rpm_effect = (
+            machine.current_rpm
+            / machine.max_rpm       
+        ) * 4.0
+
+        wear_effect = (
+            (100 - machine.health)
+            / 100
+        ) * 5.0
+
+        vibration = (
+            base + rpm_effect + wear_effect
+        )
+
+        sensor.update(vibration)
+
+
     def _update_health(self, machine, dt: float):
 
         wear = (
@@ -81,6 +109,8 @@ class SpindlePhysics(PhysicsModel):
         self._update_load(machine, dt)
         self._update_rpm(machine, dt)
         self._update_temperature(machine, dt)
+        self._update_vibration(machine, dt)
         self._update_health(machine, dt)
+
         
 

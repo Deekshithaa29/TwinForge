@@ -48,9 +48,20 @@ class Application:
             max_value=150,
         )
 
+        vibration = Sensor(
+            name="Vibration",
+            sensor_type=SensorType.VIBRATION,
+            unit="mm/s",
+            min_value=0,
+            max_value=50,
+        )
+
+
         temperature.update(25)
+        vibration.update(0.50)
 
         spindle.add_sensor(temperature)
+        spindle.add_sensor(vibration)
 
         spindle.start()
 

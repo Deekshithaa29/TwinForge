@@ -19,10 +19,17 @@ class ConsoleTelemetryListener:
                 SensorType.TEMPERATURE
             )
 
+            vibration = machine.get_sensor_by_type(
+                SensorType.VIBRATION
+            )
+
             print(machine.name)
 
             if temperature:
                 print(f"Temperature : {temperature.read():.2f} °C")
+
+            if vibration:
+                print(f"Vibration : {vibration.read():.2f} units")
 
             print(f"Health : {machine.health:.4f}%")
             print(f"Runtime : {machine.runtime_hours:.6f} hrs")
