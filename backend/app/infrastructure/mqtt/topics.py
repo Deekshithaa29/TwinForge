@@ -1,0 +1,1 @@
+MACHINE_TELEMETRY = "twinforge/factory/machines/telemetry"

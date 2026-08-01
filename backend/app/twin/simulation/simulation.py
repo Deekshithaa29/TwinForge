@@ -1,7 +1,8 @@
 import time
+from collections.abc import Callable
 
 from app.twin.factory.factory import Factory
-from app.twin.sensor.enums import SensorType
+from app.twin.simulation.simulation_context import SimulationContext
 
 
 class SimulationEngine:
@@ -15,6 +16,17 @@ class SimulationEngine:
         self.running = False
 
         self.tick_rate = 1.0
+
+        self.tick_listeners: list[Callable[[SimulationContext], None]] = []
+
+    def add_tick_listener(
+    self,
+    listener: Callable[[SimulationContext], None],
+    ) -> None:
+        """
+        Register a callback that is invoked after every simulation tick.
+        """
+        self.tick_listeners.append(listener)
 
     def start(self, max_ticks: int | None = None):
 
@@ -34,21 +46,14 @@ class SimulationEngine:
 
             print(f"Tick : {self.tick}")
 
-            for machine in self.factory.machines:
+            context = SimulationContext(
+                tick=self.tick,
+                dt=self.tick_rate,
+                simulation_time=self.tick * self.tick_rate,
+            )
 
-                temperature = machine.get_sensor_by_type(SensorType.TEMPERATURE)
-
-                if temperature:
-
-                    print(f"{machine.name}")
-
-                    print(f"Temperature : {temperature.read():.2f} °C")
-
-                    print(f"Health : {machine.health:.4f}%")
-
-                    print(f"Runtime : {machine.runtime_hours:.6f} hrs")
-
-                    print("--------------------------")
+            for listener in self.tick_listeners:
+                listener(context)
 
             time.sleep(self.tick_rate)
 

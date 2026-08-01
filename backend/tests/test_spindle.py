@@ -1,3 +1,4 @@
+from app.twin.machine.physics.spindle_physics import SpindlePhysics
 from app.twin.machine.cnc_spindle import CNCSpindle
 from app.twin.sensor.sensor import Sensor
 from app.twin.sensor.enums import SensorType
@@ -28,3 +29,43 @@ def test_add_sensor_to_spindle():
     spindle.add_sensor(sensor)
 
     assert len(spindle.sensors) == 1
+
+# def test_spindle_sets_default_rpm_when_started():
+
+#     spindle = CNCSpindle("Main Spindle")
+
+#     spindle.start()
+
+#     assert spindle.current_rpm == 1500
+
+def test_spindle_rpm_zero_when_stopped():
+
+    spindle = CNCSpindle("Main Spindle")
+
+    spindle.start()
+
+    spindle.stop()
+
+    assert spindle.current_rpm == 0
+
+def test_load_increases_after_update():
+    spindle = CNCSpindle("Main Spindle")
+
+    physics = SpindlePhysics()
+
+    spindle.load = 0.0
+
+    physics.update(spindle, 1.0)
+
+    assert spindle.load > 0.0
+
+def test_rpm_follows_load():
+    spindle = CNCSpindle("Main Spindle")
+
+    physics = SpindlePhysics()
+
+    spindle.load = 0.5
+
+    physics.update(spindle, 1.0)
+
+    assert spindle.current_rpm > 0

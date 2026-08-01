@@ -1,22 +1,27 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="TwinForge API", version="0.1.0")
+from app.api.routes.health import router as health_router
+from app.api.routes.machines import router as machines_router
+from app.api.routes.telemetry import router as telemetry_router
+from app.core.container import application
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    application.start()
+
+    yield
+
+    application.stop()
+
+
+app = FastAPI(
+    title="TwinForge API",
+    version="0.3.0",
+    lifespan=lifespan,
 )
 
-
-@app.get("/")
-def root():
-    return {"message": "TwinForge Backend Running"}
-
-
-@app.get("/health")
-def health():
-    return {"status": "healthy"}
+app.include_router(health_router)
+app.include_router(machines_router)
+app.include_router(telemetry_router)
