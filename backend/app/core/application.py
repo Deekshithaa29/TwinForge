@@ -1,4 +1,5 @@
 from app.infrastructure.listeners.mqtt_listener import MQTTTelemetryListener
+from app.infrastructure.listeners.console_listener import ConsoleTelemetryListener
 from app.twin.factory.factory import Factory
 from app.twin.simulation.simulation import SimulationEngine
 from app.twin.machine.cnc_spindle import CNCSpindle
@@ -20,11 +21,16 @@ class Application:
             self.publisher,
         )
 
-        listener = MQTTTelemetryListener(
+        mqtt_listener = MQTTTelemetryListener(
             self.telemetry_manager,
         )
 
-        self.simulation.add_tick_listener(listener)
+        console_listener = ConsoleTelemetryListener(
+            self.factory,
+        )
+
+        self.simulation.add_tick_listener(mqtt_listener)
+        self.simulation.add_tick_listener(console_listener)
 
         self.simulation_thread: threading.Thread | None = None
 

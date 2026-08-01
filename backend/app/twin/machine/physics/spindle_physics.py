@@ -1,3 +1,4 @@
+import random
 from app.twin.machine.physics.physics_model import PhysicsModel
 from app.twin.sensor.enums import SensorType
 
@@ -15,26 +16,71 @@ class SpindlePhysics(PhysicsModel):
         # Health degradation per second
         self.wear_rate = 0.0002
 
+        self.ambient_temperature = 25.0  # Ambient temperature in °C
+        self.cooling_rate = 0.02  # Cooling rate per second
+
+    def _update_load(self, machine, dt: float):
+
+        # Simulate increasing load over time
+        if abs(machine.load - machine.target_load) < 0.02:
+            machine.target_load = random.uniform(0.02, 1.00)
+
+        if machine.load < machine.target_load:
+            machine.load = min(
+                machine.load + (machine.load_step * dt),
+                machine.target_load,
+            )
+        elif machine.load > machine.target_load:
+            machine.load = max(
+                machine.load - (machine.load_step * dt),
+                machine.target_load,
+            )
+
+    def _update_rpm(self, machine, dt: float):
+        # Simulate RPM changes based on load
+        machine.current_rpm = machine.max_rpm * machine.load
+
+    def _update_temperature(self, machine, dt: float):
+
+        sensor = machine.get_sensor_by_type(
+            SensorType.TEMPERATURE
+        )
+
+        if sensor is None:
+            return
+
+        current_temperature = sensor.read()
+
+        heating = (
+            machine.current_rpm
+            / machine.max_rpm
+        ) * self.heating_rate
+
+        cooling = (current_temperature - self.ambient_temperature) * self.cooling_rate
+
+        new_temperature = current_temperature + (heating - cooling) * dt
+
+        sensor.update(
+            new_temperature
+        )
+
+    def _update_health(self, machine, dt: float):
+
+        wear = (
+            machine.current_rpm
+            / machine.max_rpm
+        ) * self.wear_rate
+
+        machine.health = max(
+            machine.health - (wear * dt),
+            0.0,
+        )
+
     def update(self, machine, dt: float):
 
-        # ----------------------------
-        # Temperature
-        # ----------------------------
+        self._update_load(machine, dt)
+        self._update_rpm(machine, dt)
+        self._update_temperature(machine, dt)
+        self._update_health(machine, dt)
+        
 
-        temperature_sensor = machine.get_sensor_by_type(SensorType.TEMPERATURE)
-
-        if temperature_sensor:
-
-            current_temp = temperature_sensor.read()
-
-            new_temp = current_temp + (self.heating_rate * dt)
-
-            temperature_sensor.update(new_temp)
-
-        # ----------------------------
-        # Machine Health
-        # ----------------------------
-
-        machine.health -= self.wear_rate * dt
-
-        machine.health = max(machine.health, 0.0)

@@ -13,8 +13,6 @@ class ConsoleTelemetryListener:
 
     def __call__(self, context: SimulationContext) -> None:
 
-        print(f"\nTick : {context.tick}")
-
         for machine in self.factory.machines:
 
             temperature = machine.get_sensor_by_type(
@@ -28,4 +26,6 @@ class ConsoleTelemetryListener:
 
             print(f"Health : {machine.health:.4f}%")
             print(f"Runtime : {machine.runtime_hours:.6f} hrs")
+            print(f"Load : {machine.load:.4f}")
+            print(f"Current RPM : {machine.current_rpm:.2f} RPM")
             print("--------------------------")

@@ -5,6 +5,6 @@ app = Application()
 
 app.start()
 
-time.sleep(5)
+time.sleep(4000)
 
 app.stop()
