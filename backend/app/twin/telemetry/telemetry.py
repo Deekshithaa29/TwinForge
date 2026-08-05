@@ -33,6 +33,8 @@ class Telemetry:
 
         data = asdict(self)
 
+        data["timestamp"] = self.timestamp.isoformat()
+
         if self.temperature is not None:
             data["temperature"] = round(self.temperature, 2)
 

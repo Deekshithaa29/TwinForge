@@ -13,11 +13,12 @@ router = APIRouter(
 def get_latest_telemetry(
     application: Application = Depends(get_application),
 ):
-    print(id(application.telemetry_manager))
-    print(application.telemetry_manager.get_latest())
+    print("data is being printed from the get_latest_telemetry route telemetry.py")
     latest = application.telemetry_manager.get_latest()
 
-    return [
-        snapshot.to_dict()
-        for snapshot in latest.values()
-    ]
+    if not latest:
+        return {}
+
+    snapshot = next(iter(latest.values()))
+
+    return snapshot.to_dict()

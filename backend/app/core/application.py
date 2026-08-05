@@ -7,6 +7,7 @@ from app.twin.sensor.sensor import Sensor
 from app.twin.sensor.enums import SensorType
 from app.infrastructure.mqtt.mqtt_publisher import MQTTPublisher
 from app.twin.telemetry.telemetry_manager import TelemetryManager
+from app.infrastructure.websocket.manager import WebSocketManager
 import threading
 
 
@@ -16,9 +17,11 @@ class Application:
         self.factory = Factory("TwinForge Factory")
         self.simulation = SimulationEngine(self.factory)
         self.publisher = MQTTPublisher()
+        self.websocket_manager = WebSocketManager()
         self.telemetry_manager = TelemetryManager(
             self.factory,
             self.publisher,
+            self.websocket_manager,
         )
 
         mqtt_listener = MQTTTelemetryListener(
@@ -28,6 +31,10 @@ class Application:
         console_listener = ConsoleTelemetryListener(
             self.factory,
         )
+
+        print("Application:", id(self))
+        print("WebSocketManager:", id(self.websocket_manager))
+        print("TelemetryManager:", id(self.telemetry_manager))
 
         self.simulation.add_tick_listener(mqtt_listener)
         self.simulation.add_tick_listener(console_listener)
