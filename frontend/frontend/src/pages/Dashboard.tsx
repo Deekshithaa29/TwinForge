@@ -1,68 +1,68 @@
 import DashboardLayout from "../components/layout/DashboardLayout";
-import MetricCard from "../components/common/MetricCard";
-import StatusBadge from "../components/common/StatusBadge";
+import MachineHeader from "../components/telemetry/MachineHeader";
+import MetricsGrid from "../components/telemetry/MetricsGrid";
 import {useTelemetry} from "../hooks/useTelemetry";
+import TelemetryChart from "../components/telemetry/TelemetryChart";
+import MachineInformation from "../components/telemetry/MachineInformation";
+import SystemStatus from "../components/telemetry/SystemStatus";
+import AlertsPanel from "../components/telemetry/AlertsPanel";
 
 export default function Dashboard() {
 
-    const telemetry = useTelemetry();
+    const { latestTelemetry, telemetryHistory } = useTelemetry();
 
-    if (!telemetry) {
+    if (!latestTelemetry) {
         return <h2>Loading...</h2>;
     }
 
 return (
+    
     <DashboardLayout>
 
-        <div className="mb-8 flex items-center justify-between">
+        <MachineHeader telemetry={latestTelemetry} />
 
-            <div>
+        <MetricsGrid telemetry={latestTelemetry} />
 
-                <h1 className="text-4xl font-bold">
-                    TwinForge Dashboard
-                </h1>
+        <div className = "mt-8 grid grid-cols-1 gap-6 xl:grid-cols-2">
 
-                <p className="text-slate-500">
-                    {telemetry.machine_name}
-                </p>
+            <MachineInformation telemetry={latestTelemetry} />
 
-            </div>
+            <SystemStatus telemetry={latestTelemetry} />
 
-            <StatusBadge
-                status={telemetry.status}
-            />
+            <AlertsPanel telemetry={latestTelemetry} />
 
-        </div>
-
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-
-            <MetricCard
+            <TelemetryChart
                 title="Temperature"
-                value={telemetry.temperature.toFixed(2) ?? "0.00"}
+                data={telemetryHistory}
+                dataKey="temperature"
                 unit="°C"
             />
 
-            <MetricCard
+            <TelemetryChart
                 title="RPM"
-                value={telemetry.current_rpm.toFixed(0) ?? "0"}
+                data={telemetryHistory}
+                dataKey="current_rpm"
                 unit="RPM"
             />
 
-            <MetricCard
+            <TelemetryChart
                 title="Health"
-                value={telemetry.health.toFixed(2) ?? "0.00"}
+                data={telemetryHistory}
+                dataKey="health"
                 unit="%"
             />
 
-            <MetricCard
+            <TelemetryChart
                 title="Load"
-                value={(telemetry.load * 100).toFixed(0) ?? "0"}
+                data={telemetryHistory}
+                dataKey="load"
                 unit="%"
             />
 
-            <MetricCard
+            <TelemetryChart
                 title="Vibration"
-                value={telemetry.vibration.toFixed(2) ?? "0.00"}
+                data={telemetryHistory}
+                dataKey="vibration"
                 unit="mm/s"
             />
 

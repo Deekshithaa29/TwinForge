@@ -1,3 +1,5 @@
+import Card from "../common/Card";
+
 interface MetricCardProps {
     title: string;
     value: string | number;
@@ -10,7 +12,7 @@ export default function MetricCard({
     unit,
 }: MetricCardProps) {
     return (
-        <div className="rounded-xl bg-white p-6 shadow-md">
+        <Card >
             <p className="text-sm font-medium text-slate-500">
                 {title}
             </p>
@@ -26,6 +28,6 @@ export default function MetricCard({
                     </span>
                 )}
             </div>
-        </div>
+        </Card>
     );
 }
