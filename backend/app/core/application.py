@@ -8,6 +8,13 @@ from app.twin.sensor.enums import SensorType
 from app.infrastructure.mqtt.mqtt_publisher import MQTTPublisher
 from app.twin.telemetry.telemetry_manager import TelemetryManager
 from app.infrastructure.websocket.manager import WebSocketManager
+from app.infrastructure.repository.memory_repository import InMemoryTelemetryRepository
+from app.infrastructure.database.database import SQLiteDatabase
+from app.infrastructure.database.schema import create_schema
+
+from app.infrastructure.repository.sqlite_repository import (
+    SQLiteTelemetryRepository,
+)
 import threading
 
 
@@ -18,8 +25,12 @@ class Application:
         self.simulation = SimulationEngine(self.factory)
         self.publisher = MQTTPublisher()
         self.websocket_manager = WebSocketManager()
+        self.database = SQLiteDatabase()
+        create_schema(self.database)
+        self.telemetry_repository = SQLiteTelemetryRepository(self.database)
         self.telemetry_manager = TelemetryManager(
             self.factory,
+            self.telemetry_repository,
             self.publisher,
             self.websocket_manager,
         )
@@ -108,5 +119,7 @@ class Application:
         self._stop_simulation()
         
         self.publisher.disconnect()
+
+        self.database.close()
 
         print("TwinForge stopped.")

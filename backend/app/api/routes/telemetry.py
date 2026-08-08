@@ -22,3 +22,17 @@ def get_latest_telemetry(
     snapshot = next(iter(latest.values()))
 
     return snapshot.to_dict()
+
+@router.get("/history")
+def get_history(
+    application: Application = Depends(get_application),
+):
+    history = application.telemetry_manager.get_history()
+
+    return {
+        machine_id: [
+            snapshot.to_dict()
+            for snapshot in snapshots
+        ]
+        for machine_id, snapshots in history.items()
+    }

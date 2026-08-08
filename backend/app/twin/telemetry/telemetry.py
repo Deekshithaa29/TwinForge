@@ -47,3 +47,22 @@ class Telemetry:
         data["runtime_hours"] = round(self.runtime_hours, 4)
 
         return data
+
+    def to_database(self) -> tuple:
+        """
+        Convert the telemetry data to a tuple for database insertion.
+        """
+
+        return (
+            self.timestamp.isoformat(),
+            self.machine_id,
+            self.machine_name,
+            self.machine_type,
+            self.status,
+            self.temperature,
+            self.vibration,
+            self.current_rpm,
+            self.load,
+            self.health,
+            self.runtime_hours,
+        )
