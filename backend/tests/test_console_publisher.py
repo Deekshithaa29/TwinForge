@@ -4,6 +4,7 @@ from app.twin.machine.cnc_spindle import CNCSpindle
 from app.twin.sensor.enums import SensorType
 from app.twin.sensor.sensor import Sensor
 from app.twin.telemetry.telemetry_manager import TelemetryManager
+from app.infrastructure.repository.memory_repository import InMemoryTelemetryRepository
 
 
 def test_console_publisher(capsys):
@@ -27,7 +28,9 @@ def test_console_publisher(capsys):
 
     publisher = ConsolePublisher()
 
-    manager = TelemetryManager(factory, publisher)
+    repository = InMemoryTelemetryRepository()
+
+    manager = TelemetryManager(factory = factory,telemetry_repository = repository, publisher = publisher)
 
     manager.collect()
 

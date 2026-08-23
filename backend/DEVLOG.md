@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.4.0
+- Added telemetry repository abstraction
+- Added SQLite database integration
+- Added SQLite telemetry repository
+- Added persistent telemetry storage
+- Added latest telemetry retrieval from database
+- Added telemetry history retrieval from database
+- Added database-to-telemetry object mapping
+- Refactored TelemetryManager to use repository-based persistence
+- Added in-memory telemetry repository for testing
+- Updated telemetry API to support persistent storage
+- Updated automated tests for repository-based telemetry management
+- Improved telemetry persistence architecture
+- Expanded automated test coverage
+
 ## v0.3.0
 - Added FastAPI backend
 - Added REST API endpoints

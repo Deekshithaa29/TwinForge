@@ -3,7 +3,7 @@ from app.twin.machine.cnc_spindle import CNCSpindle
 from app.twin.sensor.enums import SensorType
 from app.twin.sensor.sensor import Sensor
 from app.twin.telemetry.telemetry_manager import TelemetryManager
-
+from app.infrastructure.repository.memory_repository import InMemoryTelemetryRepository
 
 def test_collects_latest_snapshot():
 
@@ -25,7 +25,9 @@ def test_collects_latest_snapshot():
 
     factory.add_machine(spindle)
 
-    manager = TelemetryManager(factory)
+    repository = InMemoryTelemetryRepository()
+
+    manager = TelemetryManager(factory = factory, telemetry_repository = repository)
 
     manager.collect()
 
