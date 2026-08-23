@@ -36,3 +36,12 @@ def get_history(
         ]
         for machine_id, snapshots in history.items()
     }
+
+@router.get("/history/{machine_id}")
+def get_history_for_machine(
+    machine_id: str,
+    application: Application = Depends(get_application),
+):
+    history = application.telemetry_manager.get_history_for_machine(machine_id)
+
+    return [snapshot.to_dict() for snapshot in history]

@@ -10,6 +10,8 @@ from app.twin.sensor.sensor import Sensor
 
 if TYPE_CHECKING:
     from app.twin.machine.physics.physics_model import PhysicsModel
+    from app.degradation.degradation_model import DegradationModel
+
 
 
 @dataclass
@@ -29,6 +31,7 @@ class Machine:
 
     runtime_hours: float = 0.0
 
+    degradation_model: Optional["DegradationModel"] = None
     # Key = SensorType, Value = Sensor object
     sensors: dict[SensorType, Sensor] = field(default_factory=dict)
 
@@ -72,3 +75,6 @@ class Machine:
         # Delegate behavior to the physics model
         if self.physics_model:
             self.physics_model.update(self, dt)
+
+        if self.degradation_model:
+            self.degradation_model.update(self, dt)

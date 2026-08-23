@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type TelemetryState from "../types/telemetryState"
-import { getLatestTelemetry } from "../api/telemetry";
+import { getLatestTelemetry, getTelemetryHistory } from "../api/telemetry";
 import type Telemetry from "../types/telemetry";
 
 const WS_URL = "ws://localhost:8000/ws/telemetry";
@@ -47,6 +47,14 @@ export function useTelemetry() {
     async function loadTelemetry() {
         try {
             const data = await getLatestTelemetry();
+
+            if(!data) {
+                console.warn("No telemetry data received");
+                return;
+            }
+
+            const history = await getTelemetryHistory(data.machine_id);
+
             setState((prev) => {
 
                 if (prev.latestTelemetry) {
@@ -56,7 +64,7 @@ export function useTelemetry() {
                 return{
                     ...prev,
                     latestTelemetry: data,
-                    telemetryHistory: [data],
+                    telemetryHistory: history.slice(-100), // Keep only the last 100 telemetry entries
                 };
             });
         }

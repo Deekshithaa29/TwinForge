@@ -29,9 +29,12 @@ export default function TelemetryChart({
         value: item[dataKey] as number,
     }));
 
+    console.log(`${title} chart points:`, chartData.length);
+
     return (
         <div className="rounded-xl bg-white p-6 shadow">
 
+            
             <h2 className="mb-4 text-lg font-semibold">
                 {title}
             </h2>

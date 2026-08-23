@@ -69,3 +69,16 @@ def test_rpm_follows_load():
     physics.update(spindle, 1.0)
 
     assert spindle.current_rpm > 0
+
+def test_spindle_uses_provided_machine_id():
+    spindle = CNCSpindle(
+        name="Main Spindle",
+        machine_id="CNC-SPINDLE-001",
+    )
+
+    assert spindle.id == "CNC-SPINDLE-001"
+
+def test_spindle_generates_id_when_not_provided():
+    spindle = CNCSpindle("Main Spindle")
+
+    assert spindle.id

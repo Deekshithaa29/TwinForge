@@ -56,7 +56,7 @@ class Application:
 
     def _create_default_factory(self):
 
-        spindle = CNCSpindle("Main Spindle")
+        spindle = CNCSpindle("Main Spindle", machine_id="CNC-spindle-001")
 
         temperature = Sensor(
             name="Temperature",

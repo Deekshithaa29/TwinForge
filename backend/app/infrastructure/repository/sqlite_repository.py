@@ -111,6 +111,29 @@ class SQLiteTelemetryRepository(TelemetryRepository):
         return history
 
     @override
+    def get_history_for_machine(self, machine_id: str) -> list[Telemetry]:
+
+        """Return the complete telemetry history for a specific machine."""
+
+        cursor = self.database.cursor()
+
+        cursor.execute(
+            """
+            SELECT *
+            FROM telemetry
+            WHERE machine_id = ?
+            ORDER BY timestamp ASC
+            """,
+            (machine_id,)
+        )
+
+        rows = cursor.fetchall()
+
+        history: list[Telemetry] = []
+
+        return [self._row_to_telemetry(row) for row in rows]
+
+    @override
     def save(self, telemetry: Telemetry) -> None:
         """
         Save telemetry data to the SQLite database.
