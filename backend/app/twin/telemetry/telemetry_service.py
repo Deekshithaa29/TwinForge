@@ -37,5 +37,6 @@ class TelemetryService:
             current_rpm=machine.current_rpm,
             load=machine.load,
             health=machine.health,
+            health_state=machine.health_state.value,
             runtime_hours=machine.runtime_hours,
         )

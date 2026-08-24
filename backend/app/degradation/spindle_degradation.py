@@ -9,6 +9,9 @@ class SpindleDegradationModel(DegradationModel):
     Degradation increases as operating stress increases.
     """
 
+    def __init__(self, base_degradation_rate: float = 0.05):
+        self.base_degradation_rate = base_degradation_rate
+
     def update(self, machine: Machine, dt: float) -> None:
 
         temperature_sensor = machine.get_sensor_by_type(
@@ -41,7 +44,7 @@ class SpindleDegradationModel(DegradationModel):
             + 0.15 * max(0.0, vibration / 10.0)
         )
 
-        degradation_per_hour = 0.05 * stress
+        degradation_per_hour = self.base_degradation_rate * stress
 
         degradation = degradation_per_hour * (dt / 3600)
 
