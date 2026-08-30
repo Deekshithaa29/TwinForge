@@ -16,10 +16,12 @@ class RULDatasetGenerator:
     def __init__(
         self,
         number_of_runs: int = 10,
-        dt: float = 3600.0,
+        physics_dt: float = 10.0,
+        sample_interval: float = 3600.0
     ):
         self.number_of_runs = number_of_runs
-        self.dt = dt
+        self.physics_dt = physics_dt
+        self.sample_interval = sample_interval
 
     def generate(self):
         all_records = []
@@ -60,10 +62,14 @@ class RULDatasetGenerator:
                 )
             )
 
+            spindle.physics_model.heating_rate = random.uniform( 0.12, 0.18,)
+            spindle.physics_model.cooling_rate = random.uniform( 0.018, 0.025)
+            
             simulator = RunToFailureSimulator(
                 run_id=run_id,
                 machine=spindle,
-                dt=self.dt,
+                physics_dt=self.physics_dt,
+                sample_interval=self.sample_interval,
             )
 
             records = simulator.run()

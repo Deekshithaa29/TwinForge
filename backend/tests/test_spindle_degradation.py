@@ -147,3 +147,18 @@ def test_higher_base_degradation_rate_degrades_faster():
     high_model.update(high_rate, 3600)
 
     assert high_rate.health < low_rate.health
+
+def test_normal_spindle_health_degrades():
+
+    spindle = CNCSpindle(
+        name="Test Spindle",
+    )
+
+    spindle.start()
+
+    initial_health = spindle.health
+
+    for _ in range(100):
+        spindle.update(10.0)
+
+    assert spindle.health < initial_health

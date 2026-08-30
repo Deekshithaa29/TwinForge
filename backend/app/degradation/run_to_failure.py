@@ -8,14 +8,16 @@ class RunToFailureSimulator:
     def __init__(
         self,
         machine,
-        run_id:int,
-        dt: float = 60.0,
-        max_steps: int = 100000,
+        run_id: int,
+        physics_dt: float = 10.0,
+        sample_interval: float = 3600.0,
+        max_samples: int = 100000,
     ):
         self.machine = machine
         self.run_id = run_id
-        self.dt = dt
-        self.max_steps = max_steps
+        self.physics_dt = physics_dt
+        self.sample_interval = sample_interval
+        self.max_samples = max_samples
 
     def run(self) -> list[LifecycleRecord]:
 
@@ -27,9 +29,9 @@ class RunToFailureSimulator:
 
         while (
             self.machine.health_state != HealthState.FAILED
-            and cycle < self.max_steps
+            and cycle <= self.max_samples
         ):
-            self.machine.update(self.dt)
+            self._simulate_until_next_sample()
 
             temperature_sensor = self.machine.get_sensor_by_type(
                 SensorType.TEMPERATURE
@@ -40,6 +42,7 @@ class RunToFailureSimulator:
             )
 
             record = LifecycleRecord(
+                run_id=self.run_id,
                 cycle=cycle,
                 machine_id=self.machine.id,
                 runtime_hours=self.machine.runtime_hours,
@@ -57,7 +60,6 @@ class RunToFailureSimulator:
                 load=self.machine.load,
                 health=self.machine.health,
                 health_state=self.machine.health_state.value,
-                run_id=self.run_id,
             )
 
             records.append(record)
@@ -68,10 +70,28 @@ class RunToFailureSimulator:
             raise RuntimeError(
                 "Run-to-failure simulation ended before machine failure."
             )
-        
+
         self._assign_rul(records)
 
         return records
+
+    def _simulate_until_next_sample(self) -> None:
+        elapsed = 0.0
+
+        while (
+            elapsed < self.sample_interval
+            and self.machine.health_state != HealthState.FAILED
+        ):
+            remaining_time = self.sample_interval - elapsed
+
+            step = min(
+                self.physics_dt,
+                remaining_time,
+            )
+
+            self.machine.update(step)
+
+            elapsed += step
 
     @staticmethod
     def _assign_rul(records: list[LifecycleRecord]) -> None:
@@ -81,4 +101,7 @@ class RunToFailureSimulator:
         failure_runtime = records[-1].runtime_hours
 
         for record in records:
-            record.rul_hours = max(0.0, failure_runtime - record.runtime_hours)
+            record.rul_hours = max(
+                0.0,
+                failure_runtime - record.runtime_hours,
+            )

@@ -5,7 +5,8 @@ from app.twin.machine.health import HealthState
 def test_dataset_generator_creates_multiple_runs():
     generator = RULDatasetGenerator(
         number_of_runs=3,
-        dt=3600.0,
+        physics_dt=10.0,
+        sample_interval=3600.0,
     )
 
     records = generator.generate()
@@ -20,7 +21,8 @@ def test_dataset_generator_creates_multiple_runs():
 def test_each_run_ends_in_failed_state():
     generator = RULDatasetGenerator(
         number_of_runs=3,
-        dt=3600.0,
+        physics_dt=10.0,
+        sample_interval=3600.0,
     )
 
     records = generator.generate()
@@ -40,7 +42,8 @@ def test_each_run_ends_in_failed_state():
 def test_rul_decreases_over_lifecycle():
     generator = RULDatasetGenerator(
         number_of_runs=1,
-        dt=3600.0,
+        physics_dt=10.0,
+        sample_interval=3600.0,
     )
 
     records = generator.generate()
@@ -57,7 +60,8 @@ def test_rul_decreases_over_lifecycle():
 def test_rul_is_never_negative():
     generator = RULDatasetGenerator(
         number_of_runs=2,
-        dt=3600.0,
+        physics_dt=10.0,
+        sample_interval=3600.0,
     )
 
     records = generator.generate()
@@ -70,7 +74,8 @@ def test_rul_is_never_negative():
 def test_each_run_has_unique_machine_id():
     generator = RULDatasetGenerator(
         number_of_runs=3,
-        dt=3600.0,
+        physics_dt=10.0,
+        sample_interval=3600.0,
     )
 
     records = generator.generate()

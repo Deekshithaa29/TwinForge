@@ -13,9 +13,6 @@ class SpindlePhysics(PhysicsModel):
         # Degrees Celsius increase per second
         self.heating_rate = 0.15
 
-        # Health degradation per second
-        self.wear_rate = 0.0002
-
         self.ambient_temperature = 25.0  # Ambient temperature in °C
         self.cooling_rate = 0.02  # Cooling rate per second
 
@@ -92,25 +89,12 @@ class SpindlePhysics(PhysicsModel):
         sensor.update(vibration)
 
 
-    def _update_health(self, machine, dt: float):
-
-        wear = (
-            machine.current_rpm
-            / machine.max_rpm
-        ) * self.wear_rate
-
-        machine.health = max(
-            machine.health - (wear * dt),
-            0.0,
-        )
-
     def update(self, machine, dt: float):
 
         self._update_load(machine, dt)
         self._update_rpm(machine, dt)
         self._update_temperature(machine, dt)
         self._update_vibration(machine, dt)
-        self._update_health(machine, dt)
 
         
 

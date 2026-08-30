@@ -9,8 +9,7 @@ def test_run_to_failure_reaches_failed_state():
     simulator = RunToFailureSimulator(
         run_id=1,
         machine=spindle,
-        dt=3600,
-        max_steps=100000,
+        physics_dt=10.0,
     )
 
     records = simulator.run()
