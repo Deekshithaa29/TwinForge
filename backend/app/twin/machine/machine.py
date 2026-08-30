@@ -7,6 +7,7 @@ from uuid import uuid4
 from app.twin.machine.enums import MachineStatus
 from app.twin.sensor.enums import SensorType
 from app.twin.sensor.sensor import Sensor
+from app.twin.machine.health import HealthState
 
 if TYPE_CHECKING:
     from app.twin.machine.physics.physics_model import PhysicsModel
@@ -36,6 +37,18 @@ class Machine:
     sensors: dict[SensorType, Sensor] = field(default_factory=dict)
 
     physics_model: Optional["PhysicsModel"] = None
+
+    @property
+    def health_state(self) -> HealthState:
+        """Return the health state of the machine based on its health value."""
+        if self.health >= 80.0:
+            return HealthState.HEALTHY
+        elif self.health >= 50.0:
+            return HealthState.DEGRADED
+        elif self.health >= 20.0:
+            return HealthState.CRITICAL
+        else:
+            return HealthState.FAILED
 
     def start(self):
         """Start the machine."""
@@ -78,3 +91,6 @@ class Machine:
 
         if self.degradation_model:
             self.degradation_model.update(self, dt)
+
+        if self.health_state == HealthState.FAILED:
+            self.status = MachineStatus.STOPPED

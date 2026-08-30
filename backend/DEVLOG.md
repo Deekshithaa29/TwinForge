@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.5.0
+- Added stable machine identifiers
+- Added machine-specific telemetry history retrieval
+- Integrated persisted telemetry history into frontend charts
+- Added degradation model abstraction
+- Added CNC spindle degradation model
+- Linked machine health degradation to RPM, load, temperature and vibration
+- Added degradation behavior validation
+- Added degradation-focused automated tests
+- Verified full test suite
+
 ## v0.4.0
 - Added telemetry repository abstraction
 - Added SQLite database integration

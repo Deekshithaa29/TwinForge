@@ -23,6 +23,7 @@ class Telemetry:
     load: float
 
     health: float
+    health_state: str
 
     runtime_hours: float
 

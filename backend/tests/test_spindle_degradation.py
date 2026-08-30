@@ -108,3 +108,57 @@ def test_health_never_below_zero():
     model.update(spindle, 100000)
 
     assert spindle.health >= 0.0
+
+def test_higher_base_degradation_rate_degrades_faster():
+    low_rate = create_spindle()
+    high_rate = create_spindle()
+
+    low_rate.current_rpm = 5000
+    high_rate.current_rpm = 5000
+
+    low_rate.load = 0.8
+    high_rate.load = 0.8
+
+    low_rate.get_sensor_by_type(
+        SensorType.TEMPERATURE
+    ).update(80)
+
+    high_rate.get_sensor_by_type(
+        SensorType.TEMPERATURE
+    ).update(80)
+
+    low_rate.get_sensor_by_type(
+        SensorType.VIBRATION
+    ).update(8)
+
+    high_rate.get_sensor_by_type(
+        SensorType.VIBRATION
+    ).update(8)
+
+    low_model = SpindleDegradationModel(
+        base_degradation_rate=0.05
+    )
+
+    high_model = SpindleDegradationModel(
+        base_degradation_rate=0.5
+    )
+
+    low_model.update(low_rate, 3600)
+    high_model.update(high_rate, 3600)
+
+    assert high_rate.health < low_rate.health
+
+def test_normal_spindle_health_degrades():
+
+    spindle = CNCSpindle(
+        name="Test Spindle",
+    )
+
+    spindle.start()
+
+    initial_health = spindle.health
+
+    for _ in range(100):
+        spindle.update(10.0)
+
+    assert spindle.health < initial_health

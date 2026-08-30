@@ -24,4 +24,4 @@ class CNCSpindle(Machine):
         # Attach the physics model
         self.physics_model = SpindlePhysics()
 
-        self.degradation_model = SpindleDegradationModel()
+        self.degradation_model = SpindleDegradationModel( base_degradation_rate=0.05)
