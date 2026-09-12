@@ -1,14 +1,30 @@
 # Changelog
 
 ## v0.5.0
+
 - Added stable machine identifiers
 - Added machine-specific telemetry history retrieval
 - Integrated persisted telemetry history into frontend charts
 - Added degradation model abstraction
 - Added CNC spindle degradation model
 - Linked machine health degradation to RPM, load, temperature and vibration
-- Added degradation behavior validation
-- Added degradation-focused automated tests
+- Added machine health states: HEALTHY, DEGRADED, CRITICAL and FAILED
+- Added automatic machine stop on failure
+- Separated spindle physics from health degradation
+- Integrated health degradation into normal simulation
+- Added run-to-failure simulation
+- Added lifecycle record generation
+- Added Remaining Useful Life (RUL) label calculation
+- Separated physics timestep from dataset sampling interval
+- Added multi-run RUL dataset generator
+- Added temperature and vibration sensors to generated lifecycle data
+- Added machine-to-machine degradation and physics variability
+- Added RUL dataset CSV exporter
+- Added RUL dataset analysis utility
+- Generated RUL Dataset v1 with 100 independent machine lifecycles
+- Generated 38,083 lifecycle records with zero missing values
+- Verified all generated machine lifecycles reach FAILED state with RUL = 0
+- Added degradation and RUL dataset automated tests
 - Verified full test suite
 
 ## v0.4.0
