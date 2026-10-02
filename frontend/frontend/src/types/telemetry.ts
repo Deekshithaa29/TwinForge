@@ -16,4 +16,5 @@ export default interface Telemetry {
     health: number;
 
     runtime_hours: number;
+    predicted_rul_hours: number | null;
 }

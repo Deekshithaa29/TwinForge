@@ -26,6 +26,7 @@ class Telemetry:
     health_state: str
 
     runtime_hours: float
+    predicted_rul_hours: float | None = None
 
     def to_dict(self):
         """
@@ -41,6 +42,9 @@ class Telemetry:
 
         if self.vibration is not None:
             data["vibration"] = round(self.vibration, 2)
+
+        if self.predicted_rul_hours is not None:
+            data["predicted_rul_hours"] = round(self.predicted_rul_hours, 2)
 
         data["current_rpm"] = round(self.current_rpm, 2)
         data["load"] = round(self.load, 2)
@@ -66,4 +70,5 @@ class Telemetry:
             self.load,
             self.health,
             self.runtime_hours,
+            self.predicted_rul_hours
         )

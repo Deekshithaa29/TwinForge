@@ -41,6 +41,12 @@ export default function MetricsGrid({
                 unit="mm/s"
             />
 
+            <MetricCard
+                title="Predicted Remaining Useful Life"
+                value={telemetry.predicted_rul_hours !==null ? telemetry.predicted_rul_hours.toFixed(2) : "--"}
+                unit="hrs"
+            />
+
         </div>
     );
 }
