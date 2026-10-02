@@ -11,11 +11,14 @@ from app.infrastructure.websocket.manager import WebSocketManager
 from app.infrastructure.repository.memory_repository import InMemoryTelemetryRepository
 from app.infrastructure.database.database import SQLiteDatabase
 from app.infrastructure.database.schema import create_schema
+from app.rul.model_persistence import RULModelPersistence
+from app.rul.predictor import RULPredictor
 
 from app.infrastructure.repository.sqlite_repository import (
     SQLiteTelemetryRepository,
 )
 import threading
+from pathlib import Path
 
 
 class Application:
@@ -28,11 +31,25 @@ class Application:
         self.database = SQLiteDatabase()
         create_schema(self.database)
         self.telemetry_repository = SQLiteTelemetryRepository(self.database)
+
+        backend_root = Path(__file__).resolve().parents[2]
+
+        model_path = (
+            backend_root
+            / "models"
+            / "rul_random_forest.joblib"
+        )
+        
+        self.rul_model = RULModelPersistence.load(
+            model_path
+        )      
+        self.rul_predictor = RULPredictor(self.rul_model)
         self.telemetry_manager = TelemetryManager(
-            self.factory,
-            self.telemetry_repository,
-            self.publisher,
-            self.websocket_manager,
+            factory=self.factory,
+            telemetry_repository=self.telemetry_repository,
+            publisher=self.publisher,
+            websocket_manager=self.websocket_manager,
+            rul_predictor=self.rul_predictor,
         )
 
         mqtt_listener = MQTTTelemetryListener(

@@ -7,6 +7,7 @@ from app.rul.feature_engineering import (
 )
 from app.rul.model_evaluator import RULModelEvaluator
 from app.rul.model_trainer import RULModelTrainer
+from app.rul.model_persistence import RULModelPersistence
 
 
 def main():
@@ -45,6 +46,14 @@ def main():
         X_train,
         y_train,
     )
+
+    RULModelPersistence.save(
+        model,
+        "models/rul_random_forest.joblib"
+    )
+
+    print("\nModel saved to "
+    "models/rul_random_forest.joblib")
 
     metrics = RULModelEvaluator.evaluate(
         model,

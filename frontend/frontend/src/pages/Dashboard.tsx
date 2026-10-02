@@ -54,6 +54,13 @@ return (
                 />
 
                 <TelemetryChart
+                    title="Predicted Remaining Useful Life"
+                    data={telemetryHistory}
+                    dataKey="predicted_rul_hours"
+                    unit="hrs"
+                />
+
+                <TelemetryChart
                     title="Vibration"
                     data={telemetryHistory}
                     dataKey="vibration"

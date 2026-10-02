@@ -20,16 +20,28 @@ class SQLiteTelemetryRepository(TelemetryRepository):
             current_rpm,
             load,
             health,
-            runtime_hours
+            runtime_hours,
+            predicted_rul_hours
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """
 
     def __init__(self, database: SQLiteDatabase):
         self.database = database
 
     @staticmethod
-    def _row_to_telemetry(row) -> Telemetry:
+    def _health_state_from_health(health: float) -> str:
+        if health >= 80.0:
+            return "Healthy"
+        elif health >= 50.0:
+            return "Degraded"
+        elif health >= 20.0:
+            return "Critical"
+        else:
+            return "Failed"
+
+    @classmethod
+    def _row_to_telemetry(cls, row) -> Telemetry:
         return Telemetry(
             timestamp=datetime.fromisoformat(row["timestamp"]),
             machine_id=row["machine_id"],
@@ -41,7 +53,9 @@ class SQLiteTelemetryRepository(TelemetryRepository):
             current_rpm=row["current_rpm"],
             load=row["load"],
             health=row["health"],
-            runtime_hours=row["runtime_hours"]
+            health_state=cls._health_state_from_health(row["health"]),
+            runtime_hours=row["runtime_hours"],
+            predicted_rul_hours=row["predicted_rul_hours"]
         )
 
     @override
