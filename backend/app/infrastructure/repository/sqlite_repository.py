@@ -21,9 +21,13 @@ class SQLiteTelemetryRepository(TelemetryRepository):
             load,
             health,
             runtime_hours,
-            predicted_rul_hours
+            predicted_rul_hours,
+            maintenance_status,
+            maintenance_severity,
+            maintenance_message,
+            recommended_action
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """
 
     def __init__(self, database: SQLiteDatabase):
@@ -55,7 +59,11 @@ class SQLiteTelemetryRepository(TelemetryRepository):
             health=row["health"],
             health_state=cls._health_state_from_health(row["health"]),
             runtime_hours=row["runtime_hours"],
-            predicted_rul_hours=row["predicted_rul_hours"]
+            predicted_rul_hours=row["predicted_rul_hours"],
+            maintenance_status=row["maintenance_status"],
+            maintenance_severity=row["maintenance_severity"],
+            maintenance_message=row["maintenance_message"],
+            recommended_action=row["recommended_action"]
         )
 
     @override

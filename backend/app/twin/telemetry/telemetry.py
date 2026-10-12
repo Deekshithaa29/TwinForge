@@ -28,6 +28,11 @@ class Telemetry:
     runtime_hours: float
     predicted_rul_hours: float | None = None
 
+    maintenance_status: str | None = None
+    maintenance_severity: str | None = None
+    maintenance_message: str | None = None
+    recommended_action: str | None = None
+
     def to_dict(self):
         """
         convert the telemetry data to a dictionary
@@ -45,6 +50,11 @@ class Telemetry:
 
         if self.predicted_rul_hours is not None:
             data["predicted_rul_hours"] = round(self.predicted_rul_hours, 2)
+
+        data["maintenance_status"] = self.maintenance_status
+        data["maintenance_severity"] = self.maintenance_severity
+        data["maintenance_message"] = self.maintenance_message
+        data["recommended_action"] = self.recommended_action
 
         data["current_rpm"] = round(self.current_rpm, 2)
         data["load"] = round(self.load, 2)
@@ -70,5 +80,9 @@ class Telemetry:
             self.load,
             self.health,
             self.runtime_hours,
-            self.predicted_rul_hours
+            self.predicted_rul_hours,
+            self.maintenance_status,
+            self.maintenance_severity,
+            self.maintenance_message,
+            self.recommended_action,
         )

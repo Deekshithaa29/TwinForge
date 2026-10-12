@@ -8,11 +8,12 @@ from app.twin.sensor.enums import SensorType
 from app.infrastructure.mqtt.mqtt_publisher import MQTTPublisher
 from app.twin.telemetry.telemetry_manager import TelemetryManager
 from app.infrastructure.websocket.manager import WebSocketManager
-from app.infrastructure.repository.memory_repository import InMemoryTelemetryRepository
 from app.infrastructure.database.database import SQLiteDatabase
 from app.infrastructure.database.schema import create_schema
 from app.rul.model_persistence import RULModelPersistence
 from app.rul.predictor import RULPredictor
+from app.maintenance.predictive_maintenance_service import PredictiveMaintenanceService
+from app.configs.demo_config import DemoConfig
 
 from app.infrastructure.repository.sqlite_repository import (
     SQLiteTelemetryRepository,
@@ -25,7 +26,8 @@ class Application:
 
     def __init__(self):
         self.factory = Factory("TwinForge Factory")
-        self.simulation = SimulationEngine(self.factory)
+        self.demo_config = DemoConfig(enabled=True, physics_step_seconds=10.0, simulated_seconds_per_tick=3600.0, degradation_rate=0.5)
+        self.simulation = SimulationEngine(self.factory, self.demo_config)
         self.publisher = MQTTPublisher()
         self.websocket_manager = WebSocketManager()
         self.database = SQLiteDatabase()
@@ -44,12 +46,15 @@ class Application:
             model_path
         )      
         self.rul_predictor = RULPredictor(self.rul_model)
+        self.maintenance_service = PredictiveMaintenanceService()
+
         self.telemetry_manager = TelemetryManager(
             factory=self.factory,
             telemetry_repository=self.telemetry_repository,
             publisher=self.publisher,
             websocket_manager=self.websocket_manager,
             rul_predictor=self.rul_predictor,
+            maintenance_service=self.maintenance_service,
         )
 
         mqtt_listener = MQTTTelemetryListener(
@@ -74,6 +79,9 @@ class Application:
     def _create_default_factory(self):
 
         spindle = CNCSpindle("Main Spindle", machine_id="CNC-spindle-001")
+
+        if self.demo_config.enabled:
+            spindle.degradation_model.base_degradation_rate = self.demo_config.degradation_rate
 
         temperature = Sensor(
             name="Temperature",

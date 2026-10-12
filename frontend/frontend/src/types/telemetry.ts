@@ -14,7 +14,13 @@ export default interface Telemetry {
     load: number;
 
     health: number;
+    health_state: string;
 
     runtime_hours: number;
     predicted_rul_hours: number | null;
+
+    maintenance_status: string | null;
+    maintenance_severity: string | null;
+    maintenance_message: string | null;
+    recommended_action: string | null;
 }

@@ -1,5 +1,6 @@
 import type Telemetry from "../../types/telemetry";
 import StatusBadge from "./StatusBadge";
+import HealthStateBadge from "../machine/HealthStateBadge"
 
 interface MachineHeaderProps {
     telemetry: Telemetry;
@@ -48,8 +49,20 @@ export default function MachineHeader({
 
             </div>
 
-            <StatusBadge status={telemetry.status} />
-
+            <div className="flex flex-col items-end gap-2">
+                <div className="flex items-center gap-2">
+                    <span className="text-xs text-slate-500">
+                       Operational Status:
+                    </span>
+                    <StatusBadge status={telemetry.status} />
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="text-xs text-slate-500">
+                        Health State:
+                    </span>
+                    <HealthStateBadge healthState={telemetry.health_state} />
+                </div>
+            </div>
         </div>
     );
 }

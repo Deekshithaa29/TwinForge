@@ -20,7 +20,11 @@ def create_schema(database: SQLiteDatabase) -> None:
             load REAL NOT NULL,
             health REAL NOT NULL,
             runtime_hours REAL NOT NULL,
-            predicted_rul_hours REAL
+            predicted_rul_hours REAL,
+            maintenance_status TEXT,
+            maintenance_severity TEXT,
+            maintenance_message TEXT,
+            recommended_action TEXT
         )
         """
     )
@@ -34,10 +38,25 @@ def create_schema(database: SQLiteDatabase) -> None:
         for row in cursor.fetchall()
     }
 
+    new_columns = {
+        "predicted_rul_hours": "REAL",
+        "maintenance_status": "TEXT",
+        "maintenance_severity": "TEXT",
+        "maintenance_message": "TEXT",
+        "recommended_action": "TEXT",
+    }
+
     if "predicted_rul_hours" not in columns:
         cursor.execute(
             "ALTER TABLE telemetry "
             "ADD COLUMN predicted_rul_hours REAL"
         )
+
+    for column_name, column_type in new_columns.items():
+        if column_name not in columns:
+            cursor.execute(
+                f"ALTER TABLE telemetry "
+                f"ADD COLUMN {column_name} {column_type}"
+            )
 
     database.commit()

@@ -1,3 +1,5 @@
+from app.twin.machine.health import HealthState
+from app.twin.machine.enums import MachineStatus
 from app.twin.machine.physics.spindle_physics import SpindlePhysics
 from app.twin.machine.cnc_spindle import CNCSpindle
 from app.twin.sensor.sensor import Sensor
@@ -82,3 +84,26 @@ def test_spindle_generates_id_when_not_provided():
     spindle = CNCSpindle("Main Spindle")
 
     assert spindle.id
+
+def test_spindle_rpm_resets_when_stopped():
+    spindle = CNCSpindle("Test Spindle")
+
+    spindle.start()
+    spindle.current_rpm = 2500.0
+
+    spindle.stop()
+
+    assert spindle.current_rpm == 0.0
+
+def test_spindle_rpm_resets_on_automatic_failure():
+    spindle = CNCSpindle("Test Spindle")
+    spindle.start()
+
+    spindle.current_rpm = 2500.0
+    spindle.health = 19.0
+
+    spindle.update(dt=0.0)
+
+    assert spindle.status == MachineStatus.STOPPED
+    assert spindle.health_state == HealthState.FAILED
+    assert spindle.current_rpm == 0.0
