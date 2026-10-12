@@ -93,4 +93,4 @@ class Machine:
             self.degradation_model.update(self, dt)
 
         if self.health_state == HealthState.FAILED:
-            self.status = MachineStatus.STOPPED
+            self.stop()

@@ -25,3 +25,10 @@ class CNCSpindle(Machine):
         self.physics_model = SpindlePhysics()
 
         self.degradation_model = SpindleDegradationModel( base_degradation_rate=0.05)
+
+    def stop(self):
+        """
+        Stop the spindle.
+        """
+        super().stop()
+        self.current_rpm = 0.0

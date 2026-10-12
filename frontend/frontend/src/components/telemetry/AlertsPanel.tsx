@@ -12,6 +12,7 @@ export default function AlertsPanel({
 
     const alerts: Alert[] = [];
 
+    // Condition-based alerts
     if (telemetry.temperature > 80) {
         alerts.push({
             severity: "critical",
@@ -40,14 +41,87 @@ export default function AlertsPanel({
         });
     }
 
+    const maintenanceStatus =
+        telemetry.maintenance_status ?? "UNKNOWN";
+
+    const isMaintenanceAlert =
+        maintenanceStatus !== "NORMAL" &&
+        maintenanceStatus !== "UNKNOWN";
+
     return (
         <div className="rounded-xl bg-white p-6 shadow">
 
             <h2 className="mb-6 text-lg font-semibold">
-                Active Alerts
+                Predictive Maintenance
             </h2>
 
-            {alerts.length === 0 ? (
+            <div className="mb-6 rounded-lg border p-4">
+
+                <div className="flex items-center justify-between">
+
+                    <span className="text-sm text-gray-500">
+                        Maintenance Status
+                    </span>
+
+                    <span className="font-semibold">
+                        {maintenanceStatus}
+                    </span>
+
+                </div>
+
+                <div className="mt-3 flex items-center justify-between">
+
+                    <span className="text-sm text-gray-500">
+                        Predicted RUL
+                    </span>
+
+                    <span className="font-semibold">
+                        {telemetry.predicted_rul_hours !== null
+                            ? `${telemetry.predicted_rul_hours.toFixed(2)} hrs`
+                            : "--"}
+                    </span>
+
+                </div>
+
+                {telemetry.maintenance_message && (
+                    <p className="mt-4 text-sm text-gray-700">
+                        {telemetry.maintenance_message}
+                    </p>
+                )}
+
+                {telemetry.recommended_action && (
+                    <div className="mt-3 rounded-md bg-gray-50 p-3">
+                        <p className="text-xs font-semibold text-gray-500">
+                            RECOMMENDED ACTION
+                        </p>
+
+                        <p className="mt-1 text-sm text-gray-700">
+                            {telemetry.recommended_action}
+                        </p>
+                    </div>
+                )}
+
+            </div>
+
+            <h3 className="mb-3 text-sm font-semibold text-gray-700">
+                Active Alerts
+            </h3>
+
+            {isMaintenanceAlert && telemetry.maintenance_message && (
+                <div className="mb-3">
+                    <AlertRow
+                        alert={{
+                            severity:
+                                maintenanceStatus === "CRITICAL"
+                                    ? "critical"
+                                    : "warning",
+                            message: telemetry.maintenance_message,
+                        }}
+                    />
+                </div>
+            )}
+
+            {alerts.length === 0 && !isMaintenanceAlert ? (
                 <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-green-700">
                     🟢 No active alerts.
                 </div>

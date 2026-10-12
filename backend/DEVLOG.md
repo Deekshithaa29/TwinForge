@@ -1,5 +1,48 @@
 # Changelog
 
+## v0.7.0
+
+- Added predictive maintenance service based on machine health and Remaining Useful Life (RUL)
+- Added maintenance classifications: NORMAL, DUE_SOON, REQUIRED and CRITICAL
+- Added configurable RUL thresholds for maintenance classification
+- Added maintenance severity, descriptive messages and recommended actions
+- Integrated predictive maintenance assessments into SQLite persistence, MQTT publishing and WebSocket updates
+- Added accelerated simulation mode using DemoConfig
+- Added configurable physics timestep, simulated time per tick and degradation rate
+- Enabled accelerated run-to-failure simulation
+- Added automatic simulation termination when all machines reach FAILED state
+- Ensured final failure-state telemetry is published before simulation termination
+- Added failure-specific maintenance assessments and corrective actions
+- Ensured failed machines receive CRITICAL maintenance status even when RUL prediction is unavailable
+- Added dedicated machine health-state indicator to frontend dashboard
+- Separated machine operational status from machine health state
+- Added health-state capitalization normalization for consistent frontend display
+- Updated automatic failure handling to invoke stop() instead of directly modifying machine status
+- Added CNC spindle shutdown behavior to reset RPM to zero
+- Fixed nonzero RPM being reported after machine failure
+- Added automated tests for maintenance classifications, RUL thresholds and failure-specific assessments
+- Added regression tests for spindle shutdown and accelerated simulation termination
+- Validated end-to-end run-to-failure simulation, including final WebSocket telemetry delivery
+- Verified full test suite
+
+## v0.6.0
+
+- Added RUL dataset feature engineering and lifecycle-aware train/validation/test splitting.
+- Added baseline, Random Forest, and Gradient Boosting RUL model training and evaluation.
+- Selected the health-assisted Random Forest model based on validation performance.
+- Evaluated the final RUL model on an untouched test set.
+- Achieved 2.07-hour MAE, 3.82-hour RMSE, and 0.9993 R² on the synthetic TwinForge test dataset.
+- Added model persistence using Joblib for saving and loading the trained RUL model.
+- Added reusable RUL predictor for inference from runtime, temperature, vibration, load, and health.
+- Integrated live RUL prediction into the telemetry pipeline.
+- Added predicted RUL to WebSocket and MQTT telemetry payloads.
+- Added predicted RUL persistence to SQLite telemetry storage.
+- Extended telemetry history retrieval with predicted RUL.
+- Added SQLite migration support for the RUL prediction field.
+- Integrated live predicted RUL into the React dashboard.
+- Added predicted RUL metric card and RUL history trend visualization.
+- Added unit tests for RUL dataset splitting, feature engineering, model training, prediction, and persistence integration.
+
 ## v0.5.0
 
 - Added stable machine identifiers

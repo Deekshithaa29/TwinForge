@@ -5,6 +5,7 @@ from app.infrastructure.repository.telemetry_repository import TelemetryReposito
 from app.infrastructure.mqtt.publisher import Publisher
 from app.infrastructure.websocket.manager import WebSocketManager
 from app.rul.predictor import RULPredictor
+from app.maintenance.predictive_maintenance_service import PredictiveMaintenanceService
 
 
 class TelemetryManager:
@@ -12,12 +13,13 @@ class TelemetryManager:
     Collects telemetry from all machines in the factory.
     """
 
-    def __init__(self, factory: Factory, telemetry_repository: TelemetryRepository | None = None, publisher: Publisher | None = None, websocket_manager: WebSocketManager | None = None, rul_predictor: RULPredictor | None = None):
+    def __init__(self, factory: Factory, telemetry_repository: TelemetryRepository | None = None, publisher: Publisher | None = None, websocket_manager: WebSocketManager | None = None, rul_predictor: RULPredictor | None = None, maintenance_service: PredictiveMaintenanceService | None = None):
         self.factory = factory
         self.telemetry_repository = telemetry_repository
         self.publisher = publisher
         self.websocket_manager = websocket_manager
         self.rul_predictor = rul_predictor
+        self.maintenance_service = maintenance_service
 
 
     def collect(self):
@@ -45,6 +47,18 @@ class TelemetryManager:
                         health=snapshot.health,
                     )
                 )
+
+            if self.maintenance_service is not None:
+                assessment = self.maintenance_service.evaluate(
+                    predicted_rul_hours=snapshot.predicted_rul_hours,
+                    health=snapshot.health,
+                    health_state=snapshot.health_state,
+                )
+
+                snapshot.maintenance_status = assessment.status.value
+                snapshot.maintenance_severity = assessment.severity
+                snapshot.maintenance_message = assessment.message
+                snapshot.recommended_action = assessment.recommended_action
 
             if self.telemetry_repository:
                 self.telemetry_repository.save(
