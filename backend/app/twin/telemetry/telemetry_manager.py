@@ -1,3 +1,4 @@
+import logging
 from app.twin.factory.factory import Factory
 from app.twin.telemetry.telemetry import Telemetry
 from app.twin.telemetry.telemetry_service import TelemetryService
@@ -20,7 +21,7 @@ class TelemetryManager:
         self.websocket_manager = websocket_manager
         self.rul_predictor = rul_predictor
         self.maintenance_service = maintenance_service
-
+        self.logger = logging.getLogger(__name__)
 
     def collect(self):
         """
@@ -66,14 +67,20 @@ class TelemetryManager:
                 )
 
             if self.publisher:
-                self.publisher.publish(
-                    snapshot
-                )
+                try:
+                    self.publisher.publish(
+                        snapshot
+                    )
+                except Exception:
+                    self.logger.error(f"Error occurred while publishing telemetry %s", snapshot.machine_id)
 
             if self.websocket_manager:
-                self.websocket_manager.broadcast(
-                    snapshot.to_dict()
-                )
+                try:
+                    self.websocket_manager.broadcast(
+                        snapshot.to_dict()
+                    )
+                except Exception:
+                    self.logger.error(f"Error occurred while broadcasting telemetry %s", snapshot.machine_id)
 
     def get_latest(self):
 

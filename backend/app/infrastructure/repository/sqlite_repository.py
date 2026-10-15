@@ -36,13 +36,13 @@ class SQLiteTelemetryRepository(TelemetryRepository):
     @staticmethod
     def _health_state_from_health(health: float) -> str:
         if health >= 80.0:
-            return "Healthy"
+            return "HEALTHY"
         elif health >= 50.0:
-            return "Degraded"
+            return "DEGRADED"
         elif health >= 20.0:
-            return "Critical"
+            return "CRITICAL"
         else:
-            return "Failed"
+            return "FAILED"
 
     @classmethod
     def _row_to_telemetry(cls, row) -> Telemetry:
@@ -68,67 +68,52 @@ class SQLiteTelemetryRepository(TelemetryRepository):
 
     @override
     def get_latest(self) -> dict[str, Telemetry]:
+        """
+        Return the latest telemetry record for each machine.
+        """
+        with self.database.transaction() as cursor:
+            cursor.execute(
+                """
+                SELECT t.*
+                FROM telemetry AS t
+                WHERE t.id = (
+                    SELECT t2.id
+                    FROM telemetry AS t2
+                    WHERE t2.machine_id = t.machine_id
+                    ORDER BY t2.timestamp DESC, t2.id DESC
+                    LIMIT 1
+                )
+                """
+            )
+            rows = cursor.fetchall()
 
-        cursor = self.database.cursor()
-
-        cursor = cursor.execute(
-            "SELECT COUNT(*) AS count FROM telemetry"
-        )
-
-        count = cursor.fetchone()["count"]
-
-        print(f"Telemetry rows in database: {count}")
-
-        cursor.execute(
-            """
-            SELECT *
-            FROM telemetry
-            ORDER BY timestamp DESC
-            """
-        )
-
-        rows = cursor.fetchall()
-
-        latest: dict[str, Telemetry] = {}
-
-        for row in rows:
-
-            machine_id = row["machine_id"]
-
-            if machine_id in latest:
-                continue
-
-            latest[machine_id] = self._row_to_telemetry(row)
-
-        return latest   
+        return {
+            row["machine_id"]: self._row_to_telemetry(row)
+            for row in rows
+        }   
 
     @override
     def get_all_history(self) -> dict[str, list[Telemetry]]:
 
         """Return the complete telemetry history for all machines."""
 
-        cursor = self.database.cursor()
+        with self.database.transaction() as cursor:
+            cursor.execute(
+                """
+                SELECT *
+                FROM telemetry
+                ORDER BY timestamp DESC, id DESC
+                """
+            )
 
-        cursor.execute(
-            """
-            SELECT *
-            FROM telemetry
-            ORDER BY timestamp DESC
-            """
-        )
-
-        rows = cursor.fetchall()
+            rows = cursor.fetchall()
 
         history: dict[str, list[Telemetry]] = {}
 
         for row in rows:
-
             machine_id = row["machine_id"]
 
-            if machine_id not in history:
-                history[machine_id] = []
-
-            history[machine_id].append(self._row_to_telemetry(row))
+            history.setdefault(machine_id, []).append(self._row_to_telemetry(row))
 
         return history
 
@@ -137,22 +122,18 @@ class SQLiteTelemetryRepository(TelemetryRepository):
 
         """Return the complete telemetry history for a specific machine."""
 
-        cursor = self.database.cursor()
+        with self.database.transaction() as cursor:
+            cursor.execute(
+                """
+                SELECT *
+                FROM telemetry
+                WHERE machine_id = ?
+                ORDER BY timestamp ASC, id ASC
+                """,
+                (machine_id,),
+            )
 
-        cursor.execute(
-            """
-            SELECT *
-            FROM telemetry
-            WHERE machine_id = ?
-            ORDER BY timestamp ASC
-            """,
-            (machine_id,)
-        )
-
-        rows = cursor.fetchall()
-
-        history: list[Telemetry] = []
-
+            rows = cursor.fetchall()
         return [self._row_to_telemetry(row) for row in rows]
 
     @override
@@ -160,6 +141,8 @@ class SQLiteTelemetryRepository(TelemetryRepository):
         """
         Save telemetry data to the SQLite database.
         """
-        cursor = self.database.cursor()
-        cursor.execute(self.INSERT_TELEMETRY, telemetry.to_database())
-        self.database.commit()
+        with self.database.transaction() as cursor:
+            cursor.execute(
+                self.INSERT_TELEMETRY,
+                telemetry.to_database(),
+            )

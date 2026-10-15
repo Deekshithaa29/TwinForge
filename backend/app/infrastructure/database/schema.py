@@ -59,4 +59,11 @@ def create_schema(database: SQLiteDatabase) -> None:
                 f"ADD COLUMN {column_name} {column_type}"
             )
 
+    cursor.execute(
+        """
+        CREATE INDEX IF NOT EXISTS idx_telemetry_machine_id_timestamp
+        ON telemetry (machine_id, timestamp DESC, id DESC)
+        """
+    )
+    
     database.commit()

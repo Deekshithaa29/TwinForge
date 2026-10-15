@@ -1,3 +1,4 @@
+import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,11 +13,21 @@ from app.core.container import application
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    """
+    Manage TwinForge application lifecycle.
+    """
     application.start()
 
-    yield
-
-    application.stop()
+    try:
+        yield
+    finally:
+        # Stop simulation and release MQTT/SQLite resources.
+        # Run blocking shutdown outside the event-loop thread.
+        try:
+            await asyncio.to_thread(application.stop)
+        finally:
+            # Close WebSockets while FastAPI's event loop is alive.
+            await application.websocket_manager.close_all()
 
 
 app = FastAPI(

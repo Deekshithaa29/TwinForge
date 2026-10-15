@@ -1,7 +1,7 @@
 
 import time
 from collections.abc import Callable
-
+import threading
 from app.configs.demo_config import DemoConfig
 from app.twin.factory.factory import Factory
 from app.twin.simulation.simulation_context import SimulationContext
@@ -18,6 +18,10 @@ class SimulationEngine:
         self.factory = factory
         self.tick = 0
         self.running = False
+        self._stop_event = threading.Event()
+        self._lifecycle_lock = threading.Lock()
+        self._active = False
+        self._stop_requested = False
         self.tick_rate = 1.0
 
         self.demo_config = demo_config or DemoConfig()
@@ -63,48 +67,56 @@ class SimulationEngine:
         )
 
     def start(self, max_ticks: int | None = None):
-        self.running = True
+        with self._lifecycle_lock:
+            if self._active or self._stop_requested:
+                return
+
+            self._active = True
+            self.running = True
+            self._stop_event.clear()
 
         simulation_time = 0.0
 
-        print("Simulation Started\n")
+        print("Simulation started.")
 
-        while self.running:
+        try:
+            while not self._stop_event.is_set():
+                if max_ticks is not None and self.tick >= max_ticks:
+                    break
 
-            if max_ticks is not None and self.tick >= max_ticks:
-                self.stop()
-                break
+                elapsed = self._advance_simulation()
 
-            elapsed = self._advance_simulation()
+                if self._stop_event.is_set():
+                    break
 
-            if not self.running:
-                break
+                self.tick += 1
+                simulation_time += elapsed
 
-            self.tick += 1
-            simulation_time += elapsed
-
-            context = SimulationContext(
-                tick=self.tick,
-                dt=elapsed,
-                simulation_time=simulation_time,
-            )
-
-            for listener in self.tick_listeners:
-                listener(context)
-
-            print(
-                f"Tick: {self.tick}, "
-                f"Simulation Time: {simulation_time / 3600:.2f} hours"
-            )
-
-            if self.demo_config.enabled and self.all_machines_failed():
-                print(
-                    "All machines have failed. Stopping simulation."
+                context = SimulationContext(
+                    tick=self.tick,
+                    dt=elapsed,
+                    simulation_time=simulation_time,
                 )
-                self.stop()
-                break
 
-            time.sleep(self.tick_rate)
+                for listener in self.tick_listeners:
+                    listener(context)
+
+                print(
+                    f"Tick: {self.tick}, "
+                    f"Simulation Time: {simulation_time / 3600:.2f} hours"
+                )
+
+                if self.demo_config.enabled and self.all_machines_failed():
+                    print("All machines have failed. Stopping simulation.")
+                    break
+
+                if self._stop_event.wait(self.tick_rate):
+                    break
+
+        finally:
+            with self._lifecycle_lock:
+                self._active = False
+                self.running = False
 
     def all_machines_failed(self) -> bool:
         """
@@ -119,4 +131,9 @@ class SimulationEngine:
         return all(machine.health_state == HealthState.FAILED for machine in machines)
 
     def stop(self):
-        self.running = False
+        with self._lifecycle_lock:
+            self._stop_requested = True
+            self.running = False
+            self._stop_event.set()
+
+        print("Simulation stopping...")

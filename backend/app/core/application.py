@@ -34,6 +34,10 @@ class Application:
         create_schema(self.database)
         self.telemetry_repository = SQLiteTelemetryRepository(self.database)
 
+        self.lifecycle_lock = threading.RLock()
+        self.started = False
+        self.closed = False
+
         backend_root = Path(__file__).resolve().parents[2]
 
         model_path = (
@@ -113,38 +117,71 @@ class Application:
     def _start_simulation(self) -> None:
         """
         Starts the simulation in a background thread.
+        Prevent concurrent starts using a lock to ensure thread safety.
         """
+        with self.lifecycle_lock:
+            if self.closed:
+                raise RuntimeError("Cannot start a closed application.")
+            if( 
+                self.simulation_thread is not None and self.simulation_thread.is_alive()
+            ):
+                return  # Simulation is already running
+            self.simulation_thread = threading.Thread(
+                target=self.simulation.start,
+                kwargs={"max_ticks": None},
+                daemon=True,
+                name="TwinForgeSimulation",
+            )
 
-        self.simulation_thread = threading.Thread(
-            target=self.simulation.start,
-            kwargs={"max_ticks": None},
-            daemon=True,
-        )
-
-        self.simulation_thread.start()
+            self.simulation_thread.start()
 
     def _stop_simulation(self) -> None:
         """
-        Stops the simulation thread gracefully.
+        Stop the simulation and wait for its worker to exit.
         """
+        with self.lifecycle_lock:
+            self.simulation.stop()
 
-        self.simulation.stop()
+            thread = self.simulation_thread
 
-        if self.simulation_thread is not None:
-            self.simulation_thread.join(timeout=2)  
+            if thread is not None and thread.is_alive():
+                if thread is threading.current_thread():
+                    # If the current thread is the simulation thread, we cannot join it.
+                    raise RuntimeError("Simulation thread cannot join itself.")
+                thread.join()  
+            self.simulation_thread = None
+
 
     def start(self):
-        self.publisher.connect()
+        with self.lifecycle_lock:
+            if self.closed:
+                raise RuntimeError("Cannot restart an application after shutdown.")
+            if self.started:
+                return  # Already started
 
-        self._start_simulation()
+            self.publisher.connect()
 
-        print("TwinForge started.")
+            try:
+                self._start_simulation()
+            except Exception as e:
+                self.publisher.disconnect()
+                raise e
 
-    def stop(self):
-        self._stop_simulation()
-        
-        self.publisher.disconnect()
+            self.started = True
+            print("TwinForge started.")
 
-        self.database.close()
+    def stop(self) -> None:
+        with self.lifecycle_lock:
+            if self.closed:
+                return  # Already closed
 
-        print("TwinForge stopped.")
+            self._stop_simulation()
+
+            try:
+                self.publisher.disconnect()
+            finally:
+                self.database.close()
+                self.closed = True
+                self.started = False
+
+            print("TwinForge stopped.")
