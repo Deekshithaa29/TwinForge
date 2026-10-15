@@ -12,3 +12,6 @@ line-length = 88
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 pythonpath = ["."]
+markers = [
+    "integration: tests requiring external services",
+]

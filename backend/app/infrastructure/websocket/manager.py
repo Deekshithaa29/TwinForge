@@ -1,65 +1,128 @@
+
 import asyncio
+import logging
+import threading
+from concurrent.futures import Future
 
 from fastapi import WebSocket
 
 
+logger = logging.getLogger(__name__)
+
+
 class WebSocketManager:
     """
-    Manages all connected dashboard clients.
+    Manages dashboard WebSocket clients.
+
+    WebSocket operations run on FastAPI's event loop.
+    Telemetry can be submitted from the simulation thread.
     """
 
     def __init__(self):
         self.connections: list[WebSocket] = []
         self.loop: asyncio.AbstractEventLoop | None = None
+        self._lock = threading.RLock()
 
-    async def connect(self, websocket: WebSocket):
-
-        print(f"CONNECT Manager: {id(self)}")
+    async def connect(self, websocket: WebSocket) -> None:
         await websocket.accept()
 
         current_loop = asyncio.get_running_loop()
-        print(f"Current event loop: {current_loop}")
-        # Remember FastAPI's event loop
-        if self.loop is None:
-            self.loop = asyncio.get_running_loop()
 
-        self.connections.append(websocket)
-        print(f"New client connected. Total clients: {len(self.connections)}")
+        with self._lock:
+            if self.loop is not current_loop:
+                if self.connections:
+                    logger.warning(
+                        "WebSocket event loop changed; "
+                        "discarding stale connections"
+                    )
+                    self.connections.clear()
 
-    def disconnect(self, websocket: WebSocket):
-        if websocket in self.connections:
-            self.connections.remove(websocket)
+                self.loop = current_loop
 
-    async def _broadcast(self, message: dict):
+            if websocket not in self.connections:
+                self.connections.append(websocket)
+
+        logger.info("Dashboard WebSocket client connected")
+
+    def disconnect(self, websocket: WebSocket) -> None:
+        with self._lock:
+            if websocket in self.connections:
+                self.connections.remove(websocket)
+
+    async def _broadcast(self, message: dict) -> None:
+        with self._lock:
+            connections = list(self.connections)
+
         disconnected = []
 
-        print(f"Connected clients: {len(self.connections)}")
-        for websocket in self.connections:
+        for websocket in connections:
             try:
-                print(f"Sending message to client {websocket.client}: {message}")
                 await websocket.send_json(message)
-            except Exception as e:
-                print(f"Failed to send message to client {websocket.client}: {e}")
+            except Exception:
+                logger.exception(
+                    "Failed to send telemetry to WebSocket client"
+                )
                 disconnected.append(websocket)
 
         for websocket in disconnected:
             self.disconnect(websocket)
 
-    def broadcast(self, message: dict):
+    @staticmethod
+    def _handle_broadcast_result(future: Future) -> None:
+        try:
+            future.result()
+        except Exception:
+            logger.exception("WebSocket broadcast task failed")
+
+    def broadcast(self, message: dict) -> None:
         """
-        Thread-safe broadcast.
-        Can be called from the simulation thread.
+        Schedule telemetry delivery from a background thread.
+
+        Does not block the simulation thread.
         """
-        print("Broadcasting message to dashboard clients:", message)
-        print("BROADCAST MANAGER:", id(self))
-        print("Connections:", len(self.connections))
-        print(f"Stored loop: {self.loop}")
-        if self.loop is None:
+        with self._lock:
+            loop = self.loop
+            has_connections = bool(self.connections)
+
+        if not has_connections or loop is None:
             return
 
-        future = asyncio.run_coroutine_threadsafe(
-            self._broadcast(message),
-            self.loop,
+        if loop.is_closed() or not loop.is_running():
+            logger.warning(
+                "WebSocket event loop is unavailable"
+            )
+            return
+
+        try:
+            future = asyncio.run_coroutine_threadsafe(
+                self._broadcast(message),
+                loop,
+            )
+        except RuntimeError:
+            logger.exception(
+                "Failed to schedule WebSocket broadcast"
+            )
+            return
+
+        future.add_done_callback(
+            self._handle_broadcast_result
         )
 
-        print("Broadcast future:", future)
+    async def close_all(self) -> None:
+        """
+        Close all connected dashboard clients.
+
+        Call this from the FastAPI event loop during shutdown.
+        """
+        with self._lock:
+            connections = list(self.connections)
+            self.connections.clear()
+            self.loop = None
+
+        for websocket in connections:
+            try:
+                await websocket.close()
+            except Exception:
+                logger.exception(
+                    "Failed to close WebSocket connection"
+                )
